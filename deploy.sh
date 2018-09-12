@@ -12,6 +12,11 @@ if test -z $GROUP; then
 fi
 
 OK=0
+if echo ${LOCATION} | egrep '^usgov' >/dev/null; then
+	MS_FQDN=cloudapp.usgovcloudapi.net
+else
+	MS_FQDN=cloudapp.azure.com
+fi
 if [ -f ./deploy.cfg ]; then
 	. ./deploy.cfg
 	if test -z $RHN_ACCOUNT; then
@@ -31,15 +36,15 @@ if [ -f ./deploy.cfg ]; then
 	fi
         if test -z $MASTER_DNS; then
                 MASTER_DNS="${GROUP}master"
-                        if dig $MASTER_DNS.${LOCATION}.cloudapp.azure.com|grep -v ";"|grep "IN A"|awk '{ print $5 }'|grep [0-9] >/dev/null; then
-                                echo "Error: $MASTER_DNS.${LOCATION}.cloudapp.azure.com already exists. Select other name."
+                        if dig $MASTER_DNS.${LOCATION}.${MS_FQDN}|grep -v ";"|grep "IN A"|awk '{ print $5 }'|grep [0-9] >/dev/null; then
+                                echo "Error: $MASTER_DNS.${LOCATION}.${MS_FQDN} already exists. Select other name."
                                 exit 1
                         fi
 	fi
         if test -z $INFRA_DNS; then
                 INFRA_DNS="${GROUP}apps"
-                        if dig $INFRA_DNS.${LOCATION}.cloudapp.azure.com|grep -v ";"|grep "IN A"|awk '{ print $5 }'|grep [0-9] >/dev/null; then
-                                echo "Error: $INFRA_DNS.${LOCATION}.cloudapp.azure.com already exists. Select other name."
+                        if dig $INFRA_DNS.${LOCATION}.${MS_FQDN}|grep -v ";"|grep "IN A"|awk '{ print $5 }'|grep [0-9] >/dev/null; then
+                                echo "Error: $INFRA_DNS.${LOCATION}.${MS_FQDN} already exists. Select other name."
                                 exit 1
                         fi
 	fi
@@ -172,21 +177,23 @@ azure group deployment create --name ${GROUP} --template-file azuredeploy.json -
 
 echo
 echo "Deployment initiated. Allow 40-50 minutes for a deployment to succeed."
-echo "The cluster will be reachable at https://$MASTER_DNS.${LOCATION}.cloudapp.azure.com:8443"
+echo "The cluster will be reachable at:"
+echo -e "\e[1;33mhttps://$MASTER_DNS.${LOCATION}.${MS_FQDN}:8443\e[0m"
 echo
 echo "Waiting for Bastion host IP to get allocated."
 
 while true; do
-	if azure network public-ip show $GROUP bastionpublicip|grep "IP Address"|cut -d':' -f3|grep [0-9] >/dev/null; then
+	if azure network public-ip show $GROUP bastionpublicip|grep "Ip Address"|cut -d':' -f3|grep [0-9] >/dev/null; then
 		break
 	else
 		sleep 5
 	fi
 done
 
-echo "You can SSH into the cluster by accessing it's bastion host: ssh $(azure network public-ip show $GROUP bastionpublicip|grep "IP Address"|cut -d':' -f3|grep [0-9]|sed 's/ //g')"
+echo "You can SSH into the cluster by accessing it's bastion host: ssh $(azure network public-ip show $GROUP bastionpublicip|grep "Ip Address"|cut -d':' -f3|grep [0-9]|sed 's/ //g')"
 echo "Once your SSH key has been distributed to all nodes, you can then jump passwordless from the bastion host to all nodes."
-echo "To SSH directly to the master, use port 2200: ssh $MASTER_DNS.${LOCATION}.cloudapp.azure.com -p 2200"
+echo "To SSH directly to the master, use port 2200:"
+echo -e "\e[1;33mssh $MASTER_DNS.${LOCATION}.${MS_FQDN} -p 2200\e[0m"
 echo "For troubleshooting, check out /var/lib/waagent/custom-script/download/[0-1]/stdout or stderr on the nodes"
 
 
