@@ -190,7 +190,9 @@ while true; do
 	fi
 done
 
-echo "You can SSH into the cluster by accessing it's bastion host: ssh $(azure network public-ip show $GROUP bastionpublicip|grep "Ip Address"|cut -d':' -f3|grep [0-9]|sed 's/ //g')"
+echo "You can SSH into the cluster by accessing its bastion host:"
+bastionip=`azure network public-ip show $GROUP bastionpublicip|grep 'Ip Address'|cut -d':' -f3|grep [0-9]|sed 's/ //g'`
+echo -e "\e[1;33mssh ${bastionip}\e[0m"
 echo "Once your SSH key has been distributed to all nodes, you can then jump passwordless from the bastion host to all nodes."
 echo "To SSH directly to the master, use port 2200:"
 echo -e "\e[1;33mssh $MASTER_DNS.${LOCATION}.${MS_FQDN} -p 2200\e[0m"
