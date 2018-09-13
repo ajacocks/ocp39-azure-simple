@@ -12,13 +12,13 @@ if test -z $GROUP; then
 fi
 
 OK=0
-if echo ${LOCATION} | egrep '^usgov' >/dev/null; then
-	MS_FQDN=cloudapp.usgovcloudapi.net
-else
-	MS_FQDN=cloudapp.azure.com
-fi
 if [ -f ./deploy.cfg ]; then
 	. ./deploy.cfg
+  if echo ${LOCATION} | egrep '^usgov' >/dev/null; then
+    MS_FQDN=cloudapp.usgovcloudapi.net
+  else
+    MS_FQDN=cloudapp.azure.com
+  fi
 	if test -z $RHN_ACCOUNT; then
 		OK=1
 	elif test -z $OCP_USER; then
@@ -192,10 +192,10 @@ done
 
 echo "You can SSH into the cluster by accessing its bastion host:"
 bastionip=`azure network public-ip show $GROUP bastionpublicip|grep 'Ip Address'|cut -d':' -f3|grep [0-9]|sed 's/ //g'`
-echo -e "\e[1;33mssh ${bastionip}\e[0m"
+echo -e "\e[1;33mssh ${bastionip}\e[0m\n"
 echo "Once your SSH key has been distributed to all nodes, you can then jump passwordless from the bastion host to all nodes."
 echo "To SSH directly to the master, use port 2200:"
-echo -e "\e[1;33mssh $MASTER_DNS.${LOCATION}.${MS_FQDN} -p 2200\e[0m"
+echo -e "\e[1;33mssh $MASTER_DNS.${LOCATION}.${MS_FQDN} -p 2200\e[0m\n"
 echo "For troubleshooting, check out /var/lib/waagent/custom-script/download/[0-1]/stdout or stderr on the nodes"
 
 
