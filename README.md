@@ -25,7 +25,7 @@ $ git clone https://github.com/mglantz/ocp39-azure-simple
 
 5. Edit deploy.cfg
 
-6. Run the deployment script to install an OpenShift cluster on Azure. Pass the name of your Azure resource group in which you want to put the OpenShift cluster, as an argument.
+6. Run the deployment script to install an OpenShift cluster on Azure. Pass the name of your Azure resource group in which you want to put the OpenShift cluster, as an argument.  Optionally, pass the SSH private key file, as an additional pparameter.  If you do not, the script will assume ~/.ssh/id_rsa.
 
 $ sh ./deploy.sh myocpdemo
 
